@@ -1,10 +1,17 @@
-fastapi
-uvicorn
-python-multipart
-Pillow
-transformers
-torch
-tf-keras
-tensorflow
-torchvision
+# --- Backend / API ---
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+python-multipart==0.0.9
+Pillow==10.4.0
 
+# --- Deep Learning / ML ---
+# PyTorch CPU (pip will pick CPU wheels)
+torch==2.3.1
+torchvision==0.18.1
+
+# TensorFlow + tf-keras (CPU)
+tensorflow==2.16.1
+tf-keras==2.16.0
+
+# HuggingFace Transformers (works with both TF and Torch)
+transformers==4.44.2
