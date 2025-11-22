@@ -11,7 +11,8 @@ import numpy as np
 import cv2
 import base64
 
-
+torch.set_num_threads(1)
+torch.set_num_interop_threads(1)
 try:
     from .utils import calculate_sha256, get_recommendation
 except ImportError:
