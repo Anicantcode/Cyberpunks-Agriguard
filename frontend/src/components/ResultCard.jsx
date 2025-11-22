@@ -1,10 +1,42 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import IntegrityVerifier from './IntegrityVerifier';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 function ResultCard({ result, onReset }) {
     const isHealthy = result.prediction.toLowerCase().includes('healthy');
     const [showVerifier, setShowVerifier] = useState(false);
     const [copied, setCopied] = useState(false);
+    const cardRef = useRef(null);
+
+    const handleExportPDF = async () => {
+        if (!cardRef.current) return;
+
+        try {
+            const canvas = await html2canvas(cardRef.current, {
+                scale: 2, // Higher scale for better quality
+                backgroundColor: '#121212', // Match the dark theme background
+                useCORS: true,
+                logging: false
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const imgWidth = 210; // A4 width in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.save(`agriguard-report-${result.filename || 'analysis'}.pdf`);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please try again.');
+        }
+    };
 
     const handleCopy = () => {
         navigator.clipboard.writeText(result.integrity_hash);
@@ -14,7 +46,7 @@ function ResultCard({ result, onReset }) {
 
     return (
         <>
-            <div className="minimal-card" style={{ maxWidth: '1200px', margin: '0 auto', overflow: 'hidden', textAlign: 'left' }}>
+            <div ref={cardRef} className="minimal-card" style={{ maxWidth: '1200px', margin: '0 auto', overflow: 'hidden', textAlign: 'left' }}>
                 <div style={{
                     padding: '2rem',
                     borderBottom: '1px solid var(--border)',
@@ -182,6 +214,9 @@ function ResultCard({ result, onReset }) {
                 <div style={{ padding: '2rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
                     <button className="btn btn-outline" onClick={onReset}>
                         Analyze New Specimen
+                    </button>
+                    <button className="btn" onClick={handleExportPDF} style={{ marginLeft: '1rem' }}>
+                        Export PDF Report
                     </button>
                 </div>
             </div>
