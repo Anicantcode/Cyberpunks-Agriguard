@@ -186,7 +186,7 @@ function LandingPage({ onStart }) {
             </section>
 
             <section style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
-                {[{ label: 'Diagnostic Accuracy', value: '98.30%' }, { label: 'Pathogens Detectable', value: '38+' }, { label: 'Processing Time', value: '<100ms' }].map((stat, i) => (
+                {[{ label: 'Diagnostic Accuracy', value: '98.30%' }, { label: 'Classes Detectable', value: '38+' }, { label: 'Processing Time', value: '<100ms' }].map((stat, i) => (
                     <div key={i} style={{ padding: isMobile ? '2.5rem 1.5rem' : '4rem', borderRight: !isMobile && i !== 2 ? '1px solid var(--border)' : 'none', borderBottom: isMobile && i !== 2 ? '1px solid var(--border)' : 'none', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: isMobile ? 'center' : 'flex-start', minHeight: isMobile ? 'auto' : '300px', animation: isVisible.stats ? `fadeInUp 0.8s ease-out ${0.2 + i * 0.2}s backwards` : 'none' }}>
                         <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '1rem' }}>{stat.label}</span>
                         <span style={{ fontSize: isMobile ? '3rem' : '5rem', fontWeight: 600, lineHeight: 1, color: 'var(--primary)' }}>{stat.value}</span>
