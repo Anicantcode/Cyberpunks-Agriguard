@@ -235,15 +235,69 @@ function LandingPage({ onStart }) {
                         </div>
                         <p style={{ maxWidth: '400px', color: 'var(--text-muted)', lineHeight: '1.6', opacity: teamVisible ? 1 : 0, transform: teamVisible ? 'translateY(0)' : 'translateY(30px)', transition: 'all 0.8s ease-out 0.3s' }}>A collective of engineers dedicated to solving agricultural challenges through ML.</p>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '1.5rem' }}>
-                        {['Aniket Thorat', 'Pawan Bhandari', 'Rahul Bramhankar', 'Soham Thakor'].map((member, i) => (
-                            <div key={i} style={{ padding: '2rem', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', transition: 'all 0.3s ease', opacity: teamVisible ? 1 : 0, transform: teamVisible ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.95)', transitionDelay: `${0.4 + i * 0.1}s` }}>
-                                <div style={{ width: '50px', height: '50px', background: '#1a3d2e', borderRadius: '50%', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>{member.charAt(0)}</div>
-                                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', fontWeight: 500 }}>{member}</h3>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>ENGINEER</div>
-                            </div>
-                        ))}
-                    </div>
+                    <div
+  style={{
+    display: 'grid',
+    gridTemplateColumns: isMobile ? 'repeat(1, 1fr)' : 'repeat(4, 1fr)',
+    gap: isMobile ? '1rem' : '1.5rem',
+    padding: isMobile ? '0.5rem' : '0',
+  }}
+>
+  {['Aniket Thorat', 'Pawan Bhandari', 'Rahul Bramhankar', 'Soham Thakor'].map((member, i) => (
+    <div
+      key={i}
+      style={{
+        padding: isMobile ? '1.5rem' : '2rem',
+        border: '1px solid var(--border)',
+        background: 'rgba(255,255,255,0.04)',
+        borderRadius: '0.75rem',
+        transition: 'all 0.3s ease',
+        opacity: teamVisible ? 1 : 0,
+        transform: teamVisible ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.95)',
+        transitionDelay: `${0.3 + i * 0.1}s`,
+        textAlign: 'center',
+      }}
+    >
+      <div
+        style={{
+          width: isMobile ? '45px' : '50px',
+          height: isMobile ? '45px' : '50px',
+          background: '#1a3d2e',
+          borderRadius: '50%',
+          margin: '0 auto 1rem auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--primary)',
+          fontSize: isMobile ? '1rem' : '1.15rem',
+        }}
+      >
+        {member.charAt(0)}
+      </div>
+
+      <h3
+        style={{
+          fontSize: isMobile ? '1rem' : '1.1rem',
+          marginBottom: '0.25rem',
+          fontWeight: 500,
+        }}
+      >
+        {member}
+      </h3>
+
+      <div
+        style={{
+          fontSize: '0.8rem',
+          color: 'var(--text-muted)',
+          letterSpacing: '0.05em',
+        }}
+      >
+        ENGINEER
+      </div>
+    </div>
+  ))}
+</div>
+
                 </div>
             </section>
 
