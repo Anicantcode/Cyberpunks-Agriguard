@@ -36,7 +36,7 @@ function ImageUpload({ onImageSelect, loading }) {
 
     return (
         <div
-            className={`minimal-card ${dragActive ? 'drag-active' : ''}`}
+            className={minimal-card ${dragActive ? 'drag-active' : ''}}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
@@ -79,9 +79,15 @@ function ImageUpload({ onImageSelect, loading }) {
                             fontWeight: '400'
                         }}>Upload Specimen</h3>
                         <p style={{ color: '#666', marginBottom: '2rem', fontSize: '0.9rem' }}>Drag and drop or click to browse</p>
+                        
                         <button className="btn" style={{ pointerEvents: 'auto' }}>
                             Select File
                         </button>
+
+                        {/* Added instruction line */}
+                        <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#777' }}>
+                            Please upload one leaf with a clear background for maximum results.
+                        </p>
                     </>
                 )}
             </div>
