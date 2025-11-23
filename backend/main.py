@@ -135,16 +135,60 @@ class GradCAM:
             
         return heatmap
 
-def calculate_severity(heatmap, threshold=0.5):
+def segment_leaf(image_np):
     """
-    Estimate severity based on the percentage of the heatmap area 
+    Segments the leaf from the background using HSV color space.
+    Returns a binary mask (0 or 1) where 1 is the leaf.
+    """
+    # Convert to HSV
+    hsv = cv2.cvtColor(image_np, cv2.COLOR_RGB2HSV)
+    
+    # Define range for greens (healthy)
+    lower_green = np.array([25, 40, 40])
+    upper_green = np.array([90, 255, 255])
+    mask_green = cv2.inRange(hsv, lower_green, upper_green)
+    
+    # Define range for browns/yellows (diseased)
+    lower_brown = np.array([10, 40, 40])
+    upper_brown = np.array([25, 255, 255])
+    mask_brown = cv2.inRange(hsv, lower_brown, upper_brown)
+    
+    # Combine masks
+    mask = cv2.bitwise_or(mask_green, mask_brown)
+    
+    # Morphological operations to close holes and remove noise
+    kernel = np.ones((5,5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    
+    # Normalize to 0-1
+    return mask // 255
+
+def calculate_severity(heatmap, leaf_mask, threshold=0.5):
+    """
+    Estimate severity based on the percentage of the LEAF area 
     that has activation above the threshold.
     """
-    mask = heatmap > threshold
-    severity_score = np.sum(mask) / mask.size
-    return float(severity_score)
+    # Resize leaf mask to match heatmap if needed (though heatmap is usually resized to img)
+    if leaf_mask.shape != heatmap.shape:
+        leaf_mask = cv2.resize(leaf_mask, (heatmap.shape[1], heatmap.shape[0]), interpolation=cv2.INTER_NEAREST)
+    
+    # Binarize heatmap
+    disease_mask = (heatmap > threshold).astype(np.float32)
+    
+    # Intersect disease with leaf (ignore background activations)
+    valid_disease = disease_mask * leaf_mask
+    
+    leaf_area = np.sum(leaf_mask)
+    disease_area = np.sum(valid_disease)
+    
+    if leaf_area == 0:
+        return 0.0
+        
+    severity_score = disease_area / leaf_area
+    return float(min(severity_score, 1.0)) # Cap at 100%
 
-def overlay_heatmap(image_bytes, heatmap):
+def overlay_heatmap(image_bytes, heatmap, leaf_mask=None):
     # Convert bytes to numpy array
     nparr = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -155,6 +199,13 @@ def overlay_heatmap(image_bytes, heatmap):
     # Convert to RGB heatmap
     heatmap = np.uint8(255 * heatmap)
     heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+    
+    # Apply leaf mask to heatmap if provided (optional, makes it look cleaner)
+    if leaf_mask is not None:
+        leaf_mask_resized = cv2.resize(leaf_mask, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
+        # Expand dims for broadcasting
+        leaf_mask_3ch = np.stack([leaf_mask_resized]*3, axis=-1)
+        heatmap = heatmap * leaf_mask_3ch
     
     # Overlay
     superimposed_img = heatmap * 0.4 + img
@@ -199,6 +250,9 @@ async def predict(file: UploadFile = File(...)):
 
         # 2. Load & Preprocess Image
         image = Image.open(io.BytesIO(contents)).convert("RGB")
+        # Keep original numpy for segmentation
+        image_np = np.array(image)
+        
         input_tensor = transform(image).unsqueeze(0).to(device) # Add batch dimension
 
         # 3. Inference
@@ -224,14 +278,17 @@ async def predict(file: UploadFile = File(...)):
             # Generate Heatmap
             heatmap = grad_cam.generate_heatmap(input_tensor, label_idx)
             
-            # Calculate Severity
-            severity = calculate_severity(heatmap)
+            # Segment Leaf
+            leaf_mask = segment_leaf(image_np)
+            
+            # Calculate Severity (Relative to Leaf Area)
+            severity = calculate_severity(heatmap, leaf_mask)
             
             # Create Overlay
-            heatmap_b64 = overlay_heatmap(contents, heatmap)
+            heatmap_b64 = overlay_heatmap(contents, heatmap, leaf_mask)
             
         except Exception as e:
-            logger.error(f"Grad-CAM failed: {e}")
+            logger.error(f"Grad-CAM/Severity failed: {e}")
             # Don't fail the whole request if XAI fails
 
         # 5. Recommendation
